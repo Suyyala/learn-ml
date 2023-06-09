@@ -1,25 +1,36 @@
-import numpy as np
+import torch
 import matplotlib.pyplot as plt
 from sklearn import model_selection
+from torch.utils.data import random_split, TensorDataset
+
+
 from  linear_regression import LinearRegressionSGD, LinearRegressionBatch, NaiveRegression
 
 
 def load_data():
     # generate data
-    X = np.random.randn(100, 1)
-    y = 2 * X + 3 + np.random.randn(100, 1)
-    return X, y
+    X = torch.randn(100, 1)
+    y = 2 * X + 3 + torch.randn(100, 1)
+    return TensorDataset(X, y)
 
 if __name__ == "__main__":
     # load data
     print("Loading data...")
-    X, y = load_data()
-    print(X.shape, y.shape)
+    dataset = load_data()
+    print(len(dataset))
     epochs = 100
     learning_rate = 0.01
     # split data
     print("Splitting data...")
-    X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.2)
+    # Compute lengths for train and test
+    total_size = len(dataset)
+    train_size = int(0.8 * total_size)
+    test_size = total_size - train_size
+
+    # Split the dataset
+    train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+    X_train, y_train = train_dataset[:]
+    X_test, y_test = test_dataset[:]
     # train model
     model = LinearRegressionSGD(epochs, learning_rate)
     model.fit(X_train, y_train)
@@ -27,6 +38,8 @@ if __name__ == "__main__":
     y_pred_test = model.predict(X_test)
 
     # plot
+    X = dataset[:, 0]
+    y = dataset[:, 1]
     plt.scatter(X, y)
     plt.plot(X, model.predict(X), color='red')
     plt.show()
