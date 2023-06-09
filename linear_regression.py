@@ -80,7 +80,7 @@ class LinearRegressionBatch:
 
 
 # linear regression without gradient descent
-class naiveRegression:
+class NaiveRegression:
     def fit(self, X, Y):
         return np.mean(Y)
     

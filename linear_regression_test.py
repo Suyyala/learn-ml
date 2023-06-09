@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import model_selection
-from  linear_regression import LinearRegressionSGD, LinearRegressionBatch, naiveRegression
+from  linear_regression import LinearRegressionSGD, LinearRegressionBatch, NaiveRegression
 
 
 def load_data():
@@ -33,18 +33,18 @@ if __name__ == "__main__":
 
     # print accuracy
 
-    print(model.rmse_error(y_test, y_pred_test))
+    print(f"RMSE Error with SGD udpate {model.rmse_error(y_test, y_pred_test)}")
 
     # train with batch gradient descent
     model = LinearRegressionBatch(epochs, learning_rate)
     model.fit(X_train, y_train)
     # predict
     y_pred_test = model.predict(X_test)
-    print(model.rmse_error(y_test, y_pred_test))
+    print(f"RMSE Error with BATCH udpate {model.rmse_error(y_test, y_pred_test)}")
 
     # train with naive regression
-    model = naiveRegression()
+    model = NaiveRegression()
     model.fit(X_train, y_train)
     # predict
     y_pred_test = model.predict(X_test)
-    print(model.rmse_error(y_test, y_pred_test))
+    print(f"RMSE Error with NAIVE model {model.rmse_error(y_test, y_pred_test)}")
