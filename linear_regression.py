@@ -9,17 +9,19 @@ class LinearRegressionSGD:
         self.learning_rate = learning_rate
 
     def loss_mse_dw(self, X, Y):
+        X = X.unsqueeze(1)
         return 2 * ((X @ self.W) + self.B - Y) * X
     
     def loss_mse(self, X, Y):
         return ((X @ self.W) + self.B - Y) ** 2
     
     def loss_mse_db(self, X, Y):
+        X = X.unsqueeze(1)
         return 2 * ((X @ self.W) + self.B - Y)
     
     def fit(self, X, Y):
         self.W = torch.zeros((X.shape[1], 1))
-        self.B = torch.zeros((X.shape[0], 1))
+        self.B = torch.zeros(1)
         self.X = X
         self.Y = Y
         for i in range(self.n_iter):
@@ -54,7 +56,7 @@ class LinearRegressionBatch:
     
     def fit(self, X, Y):
         self.W = torch.zeros((X.shape[1], 1))
-        self.B = torch.zeros((X.shape[0], 1))
+        self.B = torch.zeros(1)
         self.X = X
         self.Y = Y
         for i in range(self.n_iter):
@@ -62,10 +64,10 @@ class LinearRegressionBatch:
             dB = self.loss_mse_db(X, Y)
             self.W = self.W - self.lr * dW
             self.B = self.B - self.lr * dB
-        # Calculate and print accuracy after each epoch
-        Y_pred = self.predict(X)
-        accuracy = self.rmse_error(Y, Y_pred)
-        print(f'Epoch {i+1}/{self.n_iter}, MSE Error: {accuracy}')
+            # Calculate and print accuracy after each epoch
+            Y_pred = self.predict(X)
+            accuracy = self.rmse_error(Y, Y_pred)
+            print(f'Epoch {i+1}/{self.n_iter}, MSE Error: {accuracy}')
 
     def predict(self, X):
         return (X @ self.W) + self.B
