@@ -143,6 +143,31 @@ x = torch.randperm(10)
 print(x)
 print(x.sort(descending=True))
 
+print("tensor max and argmax")
+x = torch.randperm(3)
+print(x)
+print(x.max())
+print(x.argmax())
+
+print("tensor reduction")
+x = torch.arange(10, dtype=torch.float32)
+print(x)
+print(x.sum())
+print(x.prod())
+print(x.mean())
+print(x.std())
+
+
+print("tensor unsqueeze")
+x = torch.arange(10).view(2, 5)
+print(x)
+print(x.unsqueeze(0).shape)
+print(x.unsqueeze(1).shape)
+print(x.shape)
+
+print("tensor squeeze")
+
+
 
 
 
