@@ -165,7 +165,12 @@ print(x.unsqueeze(0).shape)
 print(x.unsqueeze(1).shape)
 print(x.shape)
 
-print("tensor squeeze")
+print("tensor cuda")
+print(torch.cuda.is_available())
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(device)
+    
+
 
 
 

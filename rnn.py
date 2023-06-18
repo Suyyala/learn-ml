@@ -1,115 +1,86 @@
-# recurrent neural network (RNN) class definition using pytorch
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torchvision
-import torchvision.transforms as transforms
 
 
-# recurrent neural network class definition
+# simple RNN model
+# input_size: number of features
+# hidden_size: number of hidden units
+# output_size: number of classes
+
 class RNN(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, n_layers=1):
+    def __init__(self, input_size, hidden_size, output_size, lr=0.01):
         super(RNN, self).__init__()
-        self.rnn = nn.RNN(input_size, hidden_size, n_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_size, output_size)
+        self.hidden_size = hidden_size
+        
+        # input to hidden
+        self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
+        # hidden to output
+        self.h2o = nn.Linear(hidden_size, output_size)
+        # softmax activation function for output layer
+        self.softmax = nn.LogSoftmax(dim=1)
+        
+        # Criterion and Optimizer
+        self.criterion = nn.NLLLoss()
+        self.optimizer = optim.SGD(self.parameters(), lr=lr)
 
-    def forward(self, X):
-        X, _ = self.rnn(X)
-        X = self.fc(X[:, -1, :])
-        return X
-    
-    def compute_loss(self, X, Y):
-        loss_fn = nn.CrossEntropyLoss()
-        return loss_fn(X, Y)
-    
-    def predict(self, X):
-        return torch.argmax(self.forward(X), dim=1)
-    
-    def accuracy(self, X, Y):
-        return torch.mean((self.predict(X) == Y).float())
-    
-    def evaluate(self, X, Y):
-        return self.compute_loss(self.forward(X), Y), self.accuracy(X, Y)
-    
-    def __str__(self):
-        return f'rnn: {self.rnn}, fc: {self.fc}'
-    
-    def __repr__(self):
-        return f'rnn: {self.rnn}, fc: {self.fc}'
-    
+    def forward(self, input, hidden):
+        # concatenate input and hidden state
+        combined = torch.cat((input, hidden), 1)
+        # hidden state with tanh activation
+        hidden = torch.tanh(self.i2h(combined))
+        # output
+        output = self.h2o(hidden)
+        # softmax activation function for output layer
+        output = self.softmax(output)
+        return output, hidden
 
-# hyperparameters
-batch_size = 128
-n_epochs = 10
-learning_rate = 0.001
-momentum = 0.9
-n_classes = 10
-input_size = 28
-hidden_size = 128
-output_size = 10
-n_layers = 1
-
-# load data
-trainset = torchvision.datasets.MNIST(root='./data', train=True,
-                                        download=True, transform=transforms.ToTensor())
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                            shuffle=True, num_workers=2)
-testset = torchvision.datasets.MNIST(root='./data', train=False,
-                                        download=True, transform=transforms.ToTensor())
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                            shuffle=False, num_workers=2)
-classes = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
-
-# initialize model
-model = RNN(input_size, hidden_size, output_size, n_layers)
-print(model)
-
-# initialize optimizer
-optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
-
-# train the model
-for epoch in range(n_epochs):
-    for i, (X, Y) in enumerate(trainloader):
-        optimizer.zero_grad()
-        loss = model.compute_loss(model.forward(X), Y)
+    def init_hidden(self):
+        return torch.zeros(1, self.hidden_size)
+    
+    def train_step(self, inputs, labels):
+        hidden = self.init_hidden()
+        self.optimizer.zero_grad()
+        
+        for i in range(inputs.size()[0]):
+            output, hidden = self.forward(inputs[i], hidden)
+        
+        loss = self.criterion(output, labels)
         loss.backward()
-        optimizer.step()
-        if i % 100 == 0:
-            print(f'epoch: {epoch}, batch: {i}, loss: {loss.item()}')
+        self.optimizer.step()
+        
+        return output, loss.item()
 
-# evaluate the model
-with torch.no_grad():
-    total_loss = 0
-    total_accuracy = 0
-    for X, Y in testloader:
-        loss, accuracy = model.evaluate(X, Y)
-        total_loss += loss
-        total_accuracy += accuracy
-    print(f'loss: {total_loss / len(testloader)}, accuracy: {total_accuracy / len(testloader)}')
-
-# save the model
-torch.save(model.state_dict(), 'rnn.pt')
-
-# load the model
-model = RNN(input_size, hidden_size, output_size, n_layers)
-model.load_state_dict(torch.load('rnn.pt'))
-model.eval()
-
-# evaluate the model
-with torch.no_grad():
-    # get a random test image
-    X, Y = testset[0]
-    print(f'true label: {Y}')
-
-    # predict the label
-    pred = model.predict(X.unsqueeze(0))
-    print(f'predicted label: {pred}')
-
-    # visualize the image
-    import matplotlib.pyplot as plt
-    plt.imshow(X.squeeze(0), cmap='gray')
-    plt.show()
+    def fit(self, X, y, epochs=10):
+        for epoch in range(epochs):
+            for inputs, labels in zip(X, y):
+                output, loss = self.train_step(inputs, labels)
+                print(f"Epoch {epoch} Loss {loss}")
+                
+    def predict(self, inputs):
+        hidden = self.init_hidden()
+        for i in range(inputs.size()[0]):
+            output, hidden = self.forward(inputs[i], hidden)
+        return output
 
 
+if __name__ == "__main__":
+    # define parameters
+    input_size = 4
+    hidden_size = 10
+    output_size = 3
+    lr = 0.01
+    epochs = 10
 
+    # define model
+    model = RNN(input_size, hidden_size, output_size, lr)
+
+    # define data
+    X = torch.randn(10, 4)
+    y = torch.tensor([0, 1, 2, 0, 1, 2, 0, 1, 2, 0])
+
+    # train model
+    model.fit(X, y, epochs)
+
+    # predict
+    print(model.predict(X))
