@@ -56,7 +56,7 @@ def predict_next_word(model, dataset, prompt_word):
 
 # Load dataset
 # link to dataset: https://www.gutenberg.org/files/11/11-0.txt
-dataset = TextDataset('./data/text/11-0.txt')
+dataset = TextDataset('./upload/11-0.txt')
 dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
 
 # Initialize model
