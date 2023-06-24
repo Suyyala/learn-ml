@@ -39,7 +39,7 @@ lines = [ '~' + line + '~' for line in lines]
 print(lines[:10])
 
 # create two dimensional tensor to hold count of bigrams
-bigram_count = torch.zeros(vocab_size, vocab_size, dtype=torch.long)
+bigram_count = torch.ones(vocab_size, vocab_size, dtype=torch.long)
 
 # iterate through each line
 for line in lines:
@@ -103,7 +103,7 @@ def negative_log_likelihood(name):
 
 # evaluate the model
 # probability of a name
-print(negative_log_likelihood('sridhar'))
+print(negative_log_likelihood('sridharp'))
 
 # generate 10 names
 for _ in range(10):
