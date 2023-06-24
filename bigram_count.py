@@ -57,7 +57,7 @@ print(bigram_count[:100, :100])
 #create a probability distribution
 bigram_prob = bigram_count.float() / bigram_count.sum(dim=1, keepdim=True)
 print(bigram_prob.shape)
-print(bigram_prob[:5, :5])
+print(bigram_prob.sum(dim=1))
 
 # create a function to generate names
 def generate_name():
@@ -77,7 +77,7 @@ def generate_name():
         # get the probability distribution of next character
         probs = bigram_prob[last_char]
         # sample from the distribution to get a new character
-        new_char = torch.multinomial(probs, num_samples=1).item()
+        new_char = torch.multinomial(probs, num_samples=1, replacement=True).item()
         # convert new character to string and append to the name
         if new_char == 0:
             break
