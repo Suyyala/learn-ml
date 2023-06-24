@@ -86,9 +86,29 @@ def generate_name():
        
     return name[1:-1]
 
+# evaluate the model
+# log likelihood of a name
+def negative_log_likelihood(name):
+    # convert name to indices
+    n  = 0
+    name_encoded = encode(name)
+    # get the probability of first character
+    log_prob = torch.log(bigram_prob[0, name_encoded[0]])
+    # iterate through each character in the name
+    for i in range(len(name_encoded) - 1):
+        # get the probability of next character
+        log_prob += torch.log(bigram_prob[name_encoded[i], name_encoded[i+1]])
+        n += 1
+    return -log_prob.item() / n
+
+# evaluate the model
+# probability of a name
+print(negative_log_likelihood('sridhar'))
+
 # generate 10 names
 for _ in range(10):
     print(generate_name())
+
 
 
 
